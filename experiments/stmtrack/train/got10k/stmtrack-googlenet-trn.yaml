@@ -1,0 +1,203 @@
+test:
+  track:
+    exp_name: &TEST_NAME "got10k"
+    exp_save: &TEST_SAVE "logs/stmtrack-googlenet-got-train-val"
+    pipeline:
+      name: "STMTrackTracker"
+      STMTrackTracker:
+        test_lr: 0.95
+        window_influence: 0.21
+        penalty_k: 0.04
+        total_stride: 8
+        score_size: 25
+        q_size: 289
+        m_size: 289
+        gpu_memory_threshold: -1
+        search_area_factor: 4.0
+    tester:
+      names: ["GOT10kTester",]
+      GOT10kTester:
+        exp_name: *TEST_NAME
+        exp_save: *TEST_SAVE
+        subsets: ["val"]
+        data_root: "datasets/GOT-10k"
+        device_num: 1
+train:
+  track:
+    exp_name: &TRAIN_NAME "stmtrack-googlenet-got-train"
+    exp_save: &TRAIN_SAVE "snapshots"
+    num_processes: 4
+    model:
+      use_sync_bn: true
+      backbone_m:
+        name: "Inception3_M"
+        Inception3_M:
+          crop_pad: 4
+          pruned: True
+          pretrain_model_path: "models/googlenet/inception_v3_google-1a9a5a14-961cad7697695cca7d9ca4814b17a88d.pth"
+      backbone_q:
+        name: "Inception3_Q"
+        Inception3_Q:
+          crop_pad: 4
+          pruned: True
+          pretrain_model_path: "models/googlenet/inception_v3_google-1a9a5a14-961cad7697695cca7d9ca4814b17a88d.pth"
+      neck:
+        name: "AdjustLayer"
+        AdjustLayer:
+          in_channels: 768
+          out_channels: &OUT_CHANNELS 512
+      losses:
+        names: [
+                "FocalLoss",
+                "SigmoidCrossEntropyCenterness",
+                "IOULoss",]
+        FocalLoss:
+          name: "cls"
+          weight: 1.0
+          alpha: 0.75
+          gamma: 2.0
+        SigmoidCrossEntropyCenterness:
+          name: "ctr"
+          weight: 1.0
+        IOULoss:
+          name: "reg"
+          weight: 3.0
+      task_head:
+        name: "STMHead"
+        STMHead:
+          total_stride: 8
+          score_size: &TRAIN_SCORE_SIZE 25
+          q_size: &TRAIN_Q_SIZE 289
+          in_channels: *OUT_CHANNELS
+      task_model:
+        name: "STMTrack"
+        STMTrack:
+          pretrain_model_path: ""
+          amp: &amp False
+# ==================================================
+    data:
+      exp_name: *TRAIN_NAME
+      exp_save: *TRAIN_SAVE
+      num_epochs: &NUM_EPOCHS 20
+      minibatch: &MINIBATCH 32  # 256
+      num_workers: 32
+      nr_image_per_epoch: &NR_IMAGE_PER_EPOCH 150000
+      pin_memory: true
+      datapipeline:
+        name: "RegularDatapipeline"
+      sampler:
+        name: "TrackPairSampler"
+        TrackPairSampler:
+          negative_pair_ratio: 0.33
+          num_memory_frames: &NUM_MEMORY_FRAMES 3
+        submodules:
+          dataset:
+            names: ["GOT10kDataset",]
+            GOT10kDataset: &GOT10KDATASET_CFG
+              ratio: 1.0
+              max_diff: 50
+              dataset_root: "datasets/GOT-10k"
+              subset: "train"
+            GOT10kDatasetFixed: *GOT10KDATASET_CFG  # got10k dataset with exclusion of unfixed sequences
+          filter:
+            name: "TrackPairFilter"
+            TrackPairFilter:
+              max_area_rate: 0.6
+              min_area_rate: 0.001
+              max_ratio: 10
+      transformer:
+        names: ["RandomCropTransformer", ]
+        RandomCropTransformer:
+          max_scale: 0.3
+          max_shift: 0.4
+          q_size: *TRAIN_Q_SIZE
+          num_memory_frames: *NUM_MEMORY_FRAMES
+          search_area_factor: 4.0
+      target:
+        name: "DenseboxTarget"
+        DenseboxTarget:
+          total_stride: 8
+          score_size: *TRAIN_SCORE_SIZE
+          q_size: *TRAIN_Q_SIZE
+          num_memory_frames: *NUM_MEMORY_FRAMES
+    trainer:
+      name: "RegularTrainer"
+      RegularTrainer:
+        exp_name: *TRAIN_NAME
+        exp_save: *TRAIN_SAVE
+        max_epoch: *NUM_EPOCHS
+        minibatch: *MINIBATCH
+        nr_image_per_epoch: *NR_IMAGE_PER_EPOCH
+        snapshot: ""
+      monitors:
+        names: ["TextInfo", "TensorboardLogger"]
+        TextInfo:
+          {}
+        TensorboardLogger:
+          exp_name: *TRAIN_NAME
+          exp_save: *TRAIN_SAVE
+
+# ==================================================
+    optim:
+      optimizer:
+        name: "SGD"
+        SGD:
+          # to adjust learning rate, please modify "start_lr" and "end_lr" in lr_policy module bellow
+          amp: *amp
+          momentum: 0.9
+          weight_decay: 0.0001
+          minibatch: *MINIBATCH
+          nr_image_per_epoch: *NR_IMAGE_PER_EPOCH
+          lr_policy:
+          - >
+            {
+            "name": "LinearLR",
+            "start_lr": 0.000001,
+            "end_lr": 0.08,
+            "max_epoch": 1
+            }
+          - >
+            {
+            "name": "CosineLR",
+            "start_lr": 0.08,
+            "end_lr": 0.000001,
+            "max_epoch": 19
+            }
+          lr_multiplier:
+          - >
+            {
+            "name": "backbone",
+            "regex": "basemodel_.*",
+            "ratio": 0.1
+            }
+          - >
+            {
+            "name": "other",
+            "regex": "^((?!basemodel).)*$",
+            "ratio": 1
+            }
+      grad_modifier:
+        name: "DynamicFreezer"
+        DynamicFreezer:
+          schedule:
+          - >
+            {
+            "name": "isConv",
+            "regex": "basemodel_.*\\.conv\\.",
+            "epoch": 0,
+            "freezed": true
+            }
+          - >
+            {
+            "name": "isConvStage4",
+            "regex": "basemodel_.*\\.Mixed_6.*\\.conv\\.",
+            "epoch": 10,
+            "freezed": false
+            }
+          - >
+            {
+            "name": "isConvStage3",
+            "regex": "basemodel_.*\\.Mixed_5.*\\.conv\\.",
+            "epoch": 10,
+            "freezed": false
+            }

@@ -1,0 +1,53 @@
+test:
+  track:
+    exp_name: &TEST_NAME "vot2018"
+    exp_save: &TEST_SAVE "logs/stmtrack-googlenet-fulldata-test"
+    model:
+      backbone_m:
+        name: "Inception3_M"
+        Inception3_M:
+          crop_pad: 4
+          pruned: True
+      backbone_q:
+        name: "Inception3_Q"
+        Inception3_Q:
+          crop_pad: 4
+          pruned: True
+      neck:
+        name: "AdjustLayer"
+        AdjustLayer:
+          in_channels: 768
+          out_channels: &OUT_CHANNELS 512
+      losses:
+        names: []
+      task_head:
+        name: "STMHead"
+        STMHead:
+          total_stride: &TEST_TOTAL_STRIDE 8
+          score_size: &TEST_SCORE_SIZE 25
+          q_size: &TEST_Q_SIZE 289
+          in_channels: *OUT_CHANNELS
+      task_model:
+        name: "STMTrack"
+        STMTrack:
+          pretrain_model_path: "snapshots/stmtrack-googlenet-fulldata-train/epoch-19.pkl"
+    pipeline:
+      name: "STMTrackTracker"
+      STMTrackTracker:
+        test_lr: 0.9629084797864664
+        window_influence: 0.2674225347735762
+        penalty_k: 0.04120782242066555
+        total_stride: *TEST_TOTAL_STRIDE
+        score_size: *TEST_SCORE_SIZE
+        q_size: *TEST_Q_SIZE
+        m_size: *TEST_Q_SIZE
+        gpu_memory_threshold: -1
+        search_area_factor: 4.056291055280747
+        confidence_threshold: 0.0
+    tester:
+      names: ["VOTTester",]
+      VOTTester:
+        exp_name: *TEST_NAME
+        exp_save: *TEST_SAVE
+        dataset_names: ["VOT2018"]
+        device_num: 10
