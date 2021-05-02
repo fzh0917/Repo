@@ -96,6 +96,7 @@ Click [here](https://drive.google.com/drive/folders/1BVSUEJjvYW_KjPcn-IKQrDafB_c
 * [video_analyst](https://github.com/MegviiDetection/video_analyst)
 * [pytracking](https://github.com/visionml/pytracking)
 * [PySOT](https://github.com/STVIR/pysot)
+* [Synchronized-BatchNorm-PyTorch](https://github.com/vacancy/Synchronized-BatchNorm-PyTorch)
 * [mmdetection](https://github.com/open-mmlab/mmdetection)
 
 This repository is developed based on the single object tracking framework [video_analyst](https://github.com/MegviiDetection/video_analyst). See it for more instructions and details.
