@@ -23,7 +23,7 @@ pip install -r requirements.txt
 ```
 
 ## Test
-* Prepare the datasets: OTB2015, VOT2018, UAV123, GOT-10k, TrackingNet, LaSOT, ILSVRC VID*, ILSVRC DET*, COCO*, and something else you want to test, and set the paths as the following: 
+* Prepare the datasets: OTB2015, VOT2018, UAV123, GOT-10k, TrackingNet, LaSOT, ILSVRC VID*, ILSVRC DET*, COCO*, and something else you want to test. Set the paths as the following: 
 ```Shell
 ├── STMTrack
 |   ├── ...
@@ -42,10 +42,13 @@ pip install -r requirements.txt
 |   |   |   |   ├── VOT2018 -> /opt/data/VOT2018
 |   |   |   |   └── VOT2018.json
 ```
+* Notes
 
-i. Star notation(*): just for training. You can ignore these datasets if you just want to test the tracker.
-ii. In this case, we create soft links for every dataset. The real storage location of all datasets is `/home/username/data/`. You can change them according to your situation.
-iii. The `VOT2018.json` file can be download from [here](https://drive.google.com/file/d/15iXOqZhPAJ-EnaMTLUsJkwMsUCneUq4V/view?usp=sharing).
+> i. Star notation(*): just for training. You can ignore these datasets if you just want to test the tracker.
+> 
+> ii. In this case, we create soft links for every dataset. The real storage location of all datasets is `/home/username/data/`. You can change them according to your situation.
+> 
+> iii. The `VOT2018.json` file can be download from [here](https://drive.google.com/file/d/15iXOqZhPAJ-EnaMTLUsJkwMsUCneUq4V/view?usp=sharing).
 
 * Download the models we trained.
     
