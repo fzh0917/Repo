@@ -358,7 +358,7 @@ class STMTrackTracker(PipelineBase):
         penalty = np.exp(-(r_c * s_c - 1) * penalty_k)
         pscore = penalty * score
         if self._hp_visualization:
-            vsm.visualize(pscore, self._hp_score_size, im_x_crop, self._state['frame_idx'], 'pscore_0')
+            vsm.visualize(pscore, self._hp_score_size, im_x_crop, self._state['cur_frame_idx'], 'pscore_0')
 
         # ipdb.set_trace()
         # cos window (motion model)
@@ -367,7 +367,7 @@ class STMTrackTracker(PipelineBase):
             1 - window_influence) + self._state['window'] * window_influence
         best_pscore_id = np.argmax(pscore)
         if self._hp_visualization:
-            vsm.visualize(pscore, self._hp_score_size, im_x_crop, self._state['frame_idx'], 'pscore_1')
+            vsm.visualize(pscore, self._hp_score_size, im_x_crop, self._state['cur_frame_idx'], 'pscore_1')
 
         return best_pscore_id, pscore, penalty
 
