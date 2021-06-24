@@ -46,7 +46,7 @@ pip install -r requirements.txt
 
 > i. Star notation(*): just for training. You can ignore these datasets if you just want to test the tracker.
 > 
-> ii. In this case, we create soft links for every dataset. The real storage location of all datasets is `/home/username/data/`. You can change them according to your situation.
+> ii. In this case, we create soft links for every dataset. The real storage location of all datasets is `/opt/data/`. You can change them according to your situation.
 > 
 > iii. The `VOT2018.json` file can be download from [here](https://drive.google.com/file/d/15iXOqZhPAJ-EnaMTLUsJkwMsUCneUq4V/view?usp=sharing).
 
@@ -108,16 +108,14 @@ Click [here](https://drive.google.com/drive/folders/1BVSUEJjvYW_KjPcn-IKQrDafB_c
 
 This repository is developed based on the single object tracking framework [video_analyst](https://github.com/MegviiDetection/video_analyst). See it for more instructions and details.
 
-### Contributor
-
-* Thank [@Xiao Wang](https://github.com/wangxiao5791509) for pointing out a `key error` bug in visualization and supporting the testing results on the [TNL2K](https://sites.google.com/view/langtrackbenchmark/) dataset.
 
 ## References
-```
-@article{fu2021stmtrack,
+```Bibtex
+@inproceedings{fu2021stmtrack,
   title={STMTrack: Template-free Visual Tracking with Space-time Memory Networks},
   author={Fu, Zhihong and Liu, Qingjie and Fu, Zehua and Wang, Yunhong},
-  journal={arXiv preprint arXiv:2104.00324},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={13774--13783},
   year={2021}
 }
 ```
@@ -125,4 +123,4 @@ This repository is developed based on the single object tracking framework [vide
 ## Contact
 * Zhihong Fu[@fzh0917](https://github.com/fzh0917)
 
-If you have any question, just create issues or email us:smile:.
+If you have any questions, just create issues or email me:smile:.
